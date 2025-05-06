@@ -170,7 +170,7 @@ function getWebviewContent(leftJson: object, rightJson: object): string {
     const rightJsonString = JSON.stringify(rightJson);
 
     // Use the HTML structure provided, injecting the JSON data and custom styles
-    return `
+	return `
 <!doctype html>
 <html lang="en">
 
@@ -189,6 +189,13 @@ function getWebviewContent(leftJson: object, rightJson: object): string {
 		header {
 			display: flex;
 			justify-content: space-between;
+			align-items: center;
+			position: sticky;
+			top: 0;
+			background-color: var(--vscode-editor-background);
+			padding: 0.5rem;
+			z-index: 1000;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 		}
 
 		header>div {
@@ -200,6 +207,27 @@ function getWebviewContent(leftJson: object, rightJson: object): string {
 			font-size: 2em;
 			font-weight: 700;
 			margin: 4px;
+		}
+
+		h3 {
+			margin: 0;
+			font-size: 1rem;
+			font-weight: bold;
+		}
+
+		button#toggle-unchanged {
+			padding: 0.2rem 1rem;
+			font-size: 1rem;
+			cursor: pointer;
+			border: none;
+			border-radius: 4px;
+			background-color: var(--vscode-button-background);
+			color: var(--vscode-button-foreground);
+			transition: background-color 0.3s;
+		}
+
+		button#toggle-unchanged:hover {
+			background-color: var(--vscode-button-hoverBackground);
 		}
 
 		#diffed-h1 {
@@ -500,20 +528,20 @@ function getWebviewContent(leftJson: object, rightJson: object): string {
 </head>
 
 <body>
-	<h3>Visual JSON Diff</h3>
+	<header>
+		<h3>Visual JSON Diff</h3>
+		<button id="toggle-unchanged">Show unchanged values</button>
+	</header>
 	<p id="visualdiff">Diff Loading</p>
 
-
 	<script type="module">
-		// Use ESM build from CDN for jsondiffpatch and its HTML formatter
 		import * as jsondiffpatch from 'https://esm.sh/jsondiffpatch@0.6.0';
 		import * as htmlFormatter from 'https://esm.sh/jsondiffpatch@0.6.0/formatters/html';
 
 		let left, right, delta;
 		try {
-			// Parse the embedded JSON strings passed from the extension
-			left = JSON.parse(${ JSON.stringify(leftJsonString) });
-			right = JSON.parse(${ JSON.stringify(rightJsonString) });
+			left = JSON.parse(${JSON.stringify(leftJsonString)});
+			right = JSON.parse(${JSON.stringify(rightJsonString)});
 
 			const dom = {
 				runScriptTags: (el) => {
@@ -525,60 +553,60 @@ function getWebviewContent(leftJson: object, rightJson: object): string {
 				},
 			};
 
-			// Create JsonDiffPatch instance
 			const jsondiffpatchInstance = jsondiffpatch.create({
 				objectHash: (obj, index) => {
 					if (typeof obj === "object" && obj !== null) {
-						const objRecord = obj;
-						if (typeof objRecord._id !== "undefined") {
-							return objRecord._id;
-						}
-						if (typeof objRecord.id !== "undefined") {
-							return objRecord.id;
-						}
-						if (typeof objRecord.key !== "undefined") {
-							return objRecord.key;
-						}
-						if (typeof objRecord.name !== "undefined") {
-							return objRecord.name;
-						}
+						if (obj._id) return obj._id;
+						if (obj.id) return obj.id;
+						if (obj.key) return obj.key;
+						if (obj.name) return obj.name;
 					}
 					return \`\$\$index:\${index}\`;
-            },
-            arrays: {
-                detectMove: true,
-                includeValueOnMove: false,
-            },
-            propertyFilter: function (name, context) {
-                return name.slice(0, 1) !== '$';
-            },
-            cloneDiffValues: false,
-            omitRemovedValues: false,
-          });
+				},
+				arrays: { detectMove: true, includeValueOnMove: false },
+				propertyFilter: (name) => name[0] !== '$',
+				cloneDiffValues: false,
+            	omitRemovedValues: false,
+			});
 
-          // Calculate the difference between the two JSON objects
-          delta = jsondiffpatchInstance.diff(left, right);
+			delta = jsondiffpatchInstance.diff(left, right);
 
-          const visualDiv = document.getElementById('visualdiff');
+			const visualDiv = document.getElementById('visualdiff');
+			if (delta) {
+				visualDiv.innerHTML = htmlFormatter.format(delta, left);
+				htmlFormatter.hideUnchanged();
+				dom.runScriptTags(visualdiff);
+			} else {
+				visualDiv.innerHTML = '<p>Files are identical.</p>';
+			}
 
-          if (delta) {
-            // Format the delta into HTML, passing 'left' to include unchanged values initially (though hidden by default css)
-            visualDiv.innerHTML = htmlFormatter.format(delta, left);
-            htmlFormatter.hideUnchanged();
-            dom.runScriptTags(visualdiff);
-          } else {
-            // If delta is undefined, the files are identical
-            visualDiv.innerHTML = '<p>Files are identical.</p>';
-          }
+			const toggleButton = document.getElementById('toggle-unchanged');
+			let showingUnchanged = false;
 
-      } catch(e) {
-          console.error("Error processing JSON diff in webview:", e);
-          const visualDiv = document.getElementById('visualdiff');
-          if (visualDiv) {
-             visualDiv.innerHTML = '<p style="color: red;">Error displaying diff. Check console (Developer Tools) for details.</p>';
-          }
-      }
+			toggleButton.addEventListener('click', () => {
+				if (!delta) {
+					console.warn("No delta to toggle. Exiting.");
+					return;
+				}
+				showingUnchanged = !showingUnchanged;
+				if (showingUnchanged) {
+					htmlFormatter.showUnchanged();
+					toggleButton.textContent = 'Hide unchanged values';
+					dom.runScriptTags(visualdiff);
 
+				} else {
+					htmlFormatter.hideUnchanged();
+					toggleButton.textContent = 'Show unchanged values';
+					dom.runScriptTags(visualdiff);
+				}
+			});
+		} catch (e) {
+			console.error("Error processing JSON diff in webview:", e);
+			const visualDiv = document.getElementById('visualdiff');
+			if (visualDiv) {
+				visualDiv.innerHTML = '<p style="color: red;">Error displaying diff. Check console (Developer Tools) for details.</p>';
+			}
+		}
 	</script>
 </body>
 

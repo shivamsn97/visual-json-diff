@@ -24,14 +24,14 @@
     "commands": [
       {
         "command": "visual-json-diff.showDiff",
-        "title": "Show JSON Diff"
+        "title": "Show Visual Diff"
       }
     ],
     "menus": {
       "scm/resourceState/context": [
         {
           "command": "visual-json-diff.showDiff",
-          "when": "resourceFilename =~ /\\.json?$/",
+          "when": "resourceFilename =~ /\\.jsonc?$/ || resourceLangId == json || resourceLangId == jsonc",
           "group": "navigation"
         }
       ]
