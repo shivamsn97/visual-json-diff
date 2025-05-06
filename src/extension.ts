@@ -62,7 +62,7 @@ export async function activate(context: vscode.ExtensionContext) {
             return;
         }
 
-        if (!resourceUri.fsPath.toLowerCase().endsWith('.json')) {
+        if (!resourceUri.fsPath.toLowerCase().endsWith('.json') && !resourceUri.fsPath.toLowerCase().endsWith('.jsonc')) {
             vscode.window.showWarningMessage('This command only works on JSON files.');
             return;
         }
@@ -553,16 +553,18 @@ function getWebviewContent(leftJson: object, rightJson: object): string {
 				},
 			};
 
+			const objectHash = (obj, index) => {
+				if (typeof obj === "object" && obj !== null) {
+					if (obj._id) return obj._id;
+					if (obj.id) return obj.id;
+					if (obj.key) return obj.key;
+					if (obj.name) return obj.name;
+				}
+				return \`\$\$index:\${index}\`;
+			}
+
 			const jsondiffpatchInstance = jsondiffpatch.create({
-				objectHash: (obj, index) => {
-					if (typeof obj === "object" && obj !== null) {
-						if (obj._id) return obj._id;
-						if (obj.id) return obj.id;
-						if (obj.key) return obj.key;
-						if (obj.name) return obj.name;
-					}
-					return \`\$\$index:\${index}\`;
-				},
+				objectHash: objectHash,
 				arrays: { detectMove: true, includeValueOnMove: false },
 				propertyFilter: (name) => name[0] !== '$',
 				cloneDiffValues: false,

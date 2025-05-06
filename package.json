@@ -13,10 +13,10 @@
     "vscode": "^1.99.0"
   },
   "categories": [
-    "Other"
+    "Visualization"
   ],
   "activationEvents": [
-    "onCommand:visual-json-diff.showDiff",
+    "onStartupFinished",
     "onView:workbench.view.scm"
   ],
   "main": "./out/extension.js",
