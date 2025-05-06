@@ -3,6 +3,7 @@
   "displayName": "Visual JSON Diff",
   "description": "Show a visual diff for modified JSON files in Source Control.",
   "version": "0.0.1",
+  "icon": "images/icon-128.png",
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -15,13 +16,6 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "visual-json-diff.showDiff",
-        "title": "Show Visual JSON Diff",
-        "category": "Source Control"
-      }
-    ],
     "menus": {
       "scm/resourceState/context": [
         {
