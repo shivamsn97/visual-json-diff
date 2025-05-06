@@ -21,6 +21,12 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "visual-json-diff.showDiff",
+        "title": "Show JSON Diff"
+      }
+    ],
     "menus": {
       "scm/resourceState/context": [
         {
