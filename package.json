@@ -2,7 +2,7 @@
   "name": "visual-json-diff",
   "displayName": "Visual JSON Diff",
   "description": "Show a visual diff for modified JSON files in Source Control.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "icon": "images/icon-128.png",
   "repository": {
     "type": "git",
@@ -15,8 +15,7 @@
   "categories": [
     "Visualization"
   ],
-  "activationEvents": [
-  ],
+  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -50,7 +49,7 @@
     "eslint": "^8.57.0",
     "@typescript-eslint/eslint-plugin": "^7.11.0",
     "@typescript-eslint/parser": "^7.11.0",
-    "typescript": "^5.4.5", 
+    "typescript": "^5.4.5",
     "@vscode/test-electron": "^2.3.9"
   },
   "extensionDependencies": [
