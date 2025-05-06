@@ -181,13 +181,6 @@ function getWebviewContent(leftJson: object, rightJson: object): string {
       href="https://esm.sh/jsondiffpatch@0.6.0/lib/formatters/styles/html.css"
       type="text/css"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/monokai.min.css"
-      integrity="sha512-R6PH4vSzF2Yxjdvb2p2FA06yWul+U0PDDav4b/od/oXf9Iw37zl10plvwOXelrjV2Ai7Eo3vyHeyFUjhXdBCVQ=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
     <style>
      body {
 	font-family: -apple-system, BlinkMacSystemFont, segoe ui, Roboto, Ubuntu,
@@ -432,47 +425,10 @@ a:hover {
 
 html,
 body {
-	color-scheme: only light;
-	background-color: #f8f8ff;
-	color: black;
+	background-color: var(--vscode-editor-background);
+	color: var(--vscode-editor-foreground);
 }
 
-/* dark/light toggle */
-
-.go-light-icon {
-	position: absolute;
-	width: 24px;
-	height: 24px;
-	top: 0;
-	left: 0;
-	position: 0 0 0 0;
-	opacity: 0;
-	transition: all 0.5s;
-}
-
-.go-dark-icon {
-	position: absolute;
-	width: 24px;
-	height: 24px;
-	top: 0;
-	left: 0;
-	opacity: 1;
-	transition: all 0.5s;
-}
-
-html[data-theme="dark"],
-html[data-theme="dark"] body {
-	background-color: #151515;
-	color: #eee;
-
-	.go-light-icon {
-		opacity: 1;
-	}
-
-	.go-dark-icon {
-		opacity: 0;
-	}
-}
 
 button#color-scheme-toggle {
 	position: relative;
@@ -492,11 +448,11 @@ button#color-scheme-toggle:hover {
 	box-shadow: black 0 0 15px;
 }
 
-html[data-theme="dark"] button#color-scheme-toggle:hover {
+body.vscode-dark button#color-scheme-toggle:hover {
 	box-shadow: white 0 0 15px;
 }
 
-html[data-theme="dark"] {
+body.vscode-dark {
 	.jsondiffpatch-added .jsondiffpatch-property-name,
 	.jsondiffpatch-added .jsondiffpatch-value pre,
 	.jsondiffpatch-modified .jsondiffpatch-right-value pre,
@@ -548,25 +504,6 @@ pre {
 
     
     <script type="module">
-      (function () {
-        const darkModeOverride = localStorage.getItem('color-scheme');
-        if (darkModeOverride === 'dark' || darkModeOverride === 'light') {
-          document
-            .querySelector('meta[name="color-scheme"]')
-            .setAttribute(
-              'content',
-              darkModeOverride === 'dark' ? 'only dark' : 'only light',
-            );
-        }
-        const darkMode =
-          darkModeOverride === 'dark' ||
-          (darkModeOverride !== 'light' &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.setAttribute(
-          'data-theme',
-          darkMode ? 'dark' : 'light',
-        );
-      })();
       // Use ESM build from CDN for jsondiffpatch and its HTML formatter
       import * as jsondiffpatch from 'https://esm.sh/jsondiffpatch@0.6.0';
       import * as htmlFormatter from 'https://esm.sh/jsondiffpatch@0.6.0/formatters/html';
