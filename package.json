@@ -3,7 +3,7 @@
   "displayName": "Visual JSON Diff",
   "description": "Show a visual diff for modified JSON files in Source Control.",
   "version": "0.1.0",
-  "icon": "images/icon-128.png",
+  "icon": "media/icon-128.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/shivamsn97/visual-json-diff.git"
