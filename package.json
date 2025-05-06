@@ -16,8 +16,6 @@
     "Visualization"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onView:workbench.view.scm"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -31,7 +29,7 @@
       "scm/resourceState/context": [
         {
           "command": "visual-json-diff.showDiff",
-          "when": "resourceFilename =~ /\\.jsonc?$/ || resourceLangId == json || resourceLangId == jsonc",
+          "when": "scmProvider == git",
           "group": "navigation"
         }
       ]
