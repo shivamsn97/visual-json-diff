@@ -150,14 +150,22 @@ export async function activate(context: vscode.ExtensionContext) {
             {
                 enableScripts: true, // Allow scripts to run in the webview
                 // Optionally, restrict domains
-                localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'media/')], // Allow access to the media folder
+                localResourceRoots: [
+					vscode.Uri.joinPath(context.extensionUri, 'media'),
+					vscode.Uri.joinPath(context.extensionUri, 'dist')
+				], // Allow access to the media and node_modules directories
             }
         );
 
-        const stylePath = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'style.css'));
+		const stylePath = vscode.Uri.joinPath(context.extensionUri, 'media', 'style.css');
+        const styleURI = panel.webview.asWebviewUri(stylePath);
+
+		// Get URI for the bundled webview script
+		const scriptPath = vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.js');
+		const scriptUri = panel.webview.asWebviewUri(scriptPath);
 
         // --- 4. Set the HTML content for the webview ---
-        panel.webview.html = getWebviewContent(leftContentJson, rightContentJson, stylePath.toString());
+        panel.webview.html = getWebviewContent(panel, leftContentJson, rightContentJson, styleURI.toString(), scriptUri.toString());
 
         context.subscriptions.push(panel); // Add panel to subscriptions for cleanup
     });
@@ -166,10 +174,12 @@ export async function activate(context: vscode.ExtensionContext) {
 }
 
 // This function generates the HTML content for the webview
-function getWebviewContent(leftJson: object, rightJson: object, stylePath: string) {
+function getWebviewContent(panel: vscode.WebviewPanel, leftJson: object, rightJson: object, stylePath: string, scriptPath: string) {
     // Safely stringify JSON data to embed it in the script tag
     const leftJsonString = JSON.stringify(leftJson);
     const rightJsonString = JSON.stringify(rightJson);
+
+	const nonce = getNonce(); 
 
     // Use the HTML structure provided, injecting the JSON data and custom styles
 	return `
@@ -178,9 +188,14 @@ function getWebviewContent(leftJson: object, rightJson: object, stylePath: strin
 
 <head>
 	<meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'none';
+        style-src ${panel.webview.cspSource} 'unsafe-inline';
+        img-src ${panel.webview.cspSource} https: data:;
+        script-src 'nonce-${nonce}' 'unsafe-inline' 'unsafe-eval' ${panel.webview.cspSource};
+        font-src ${panel.webview.cspSource};">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>JSON Diff</title>
-	<link rel="stylesheet" href="https://esm.sh/jsondiffpatch@0.6.0/lib/formatters/styles/html.css" type="text/css" />
 	<link rel="stylesheet" href="${stylePath}" type="text/css" />
 </head>
 
@@ -190,83 +205,12 @@ function getWebviewContent(leftJson: object, rightJson: object, stylePath: strin
 		<button id="toggle-unchanged">Show unchanged values</button>
 	</header>
 	<p id="visualdiff">Diff Loading</p>
-
-	<script type="module">
-		import * as jsondiffpatch from 'https://esm.sh/jsondiffpatch@0.6.0';
-		import * as htmlFormatter from 'https://esm.sh/jsondiffpatch@0.6.0/formatters/html';
-
-		let left, right, delta;
-		try {
-			left = JSON.parse(${JSON.stringify(leftJsonString)});
-			right = JSON.parse(${JSON.stringify(rightJsonString)});
-
-			const dom = {
-				runScriptTags: (el) => {
-					const scripts = el.querySelectorAll("script");
-					for (const s of scripts) {
-						// biome-ignore lint/security/noGlobalEval: this is used to adjust move arrows
-						eval(s.innerHTML);
-					}
-				},
-			};
-
-			const objectHash = (obj, index) => {
-				if (typeof obj === "object" && obj !== null) {
-					if (obj._id) return obj._id;
-					if (obj.id) return obj.id;
-					if (obj.key) return obj.key;
-					if (obj.name) return obj.name;
-				}
-				return \`\$\$index:\${index}\`;
-			}
-
-			const jsondiffpatchInstance = jsondiffpatch.create({
-				objectHash: objectHash,
-				arrays: { detectMove: true, includeValueOnMove: false },
-				propertyFilter: (name) => name[0] !== '$',
-				cloneDiffValues: false,
-            	omitRemovedValues: false,
-			});
-
-			delta = jsondiffpatchInstance.diff(left, right);
-
-			const visualDiv = document.getElementById('visualdiff');
-			if (delta) {
-				visualDiv.innerHTML = htmlFormatter.format(delta, left);
-				htmlFormatter.hideUnchanged();
-				dom.runScriptTags(visualdiff);
-			} else {
-				visualDiv.innerHTML = '<p>Files are identical.</p>';
-			}
-
-			const toggleButton = document.getElementById('toggle-unchanged');
-			let showingUnchanged = false;
-
-			toggleButton.addEventListener('click', () => {
-				if (!delta) {
-					console.warn("No delta to toggle. Exiting.");
-					return;
-				}
-				showingUnchanged = !showingUnchanged;
-				if (showingUnchanged) {
-					htmlFormatter.showUnchanged();
-					toggleButton.textContent = 'Hide unchanged values';
-					dom.runScriptTags(visualdiff);
-
-				} else {
-					htmlFormatter.hideUnchanged();
-					toggleButton.textContent = 'Show unchanged values';
-					dom.runScriptTags(visualdiff);
-				}
-			});
-		} catch (e) {
-			console.error("Error processing JSON diff in webview:", e);
-			const visualDiv = document.getElementById('visualdiff');
-			if (visualDiv) {
-				visualDiv.innerHTML = '<p style="color: red;">Error displaying diff. Check console (Developer Tools) for details.</p>';
-			}
-		}
+	<script nonce="${nonce}">
+		window.leftData = JSON.parse(${JSON.stringify(leftJsonString)});
+		window.rightData = JSON.parse(${JSON.stringify(rightJsonString)});
+		// If needed later: const vscode = acquireVsCodeApi(); window.vscode = vscode;
 	</script>
+	<script type="module" src="${scriptPath}" nonce="${nonce}"></script>
 </body>
 
 </html>
@@ -275,3 +219,12 @@ function getWebviewContent(leftJson: object, rightJson: object, stylePath: strin
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
+
+function getNonce() {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}
