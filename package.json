@@ -2,7 +2,7 @@
   "name": "visual-json-diff",
   "displayName": "Visual JSON Diff",
   "description": "Show a visual diff for modified JSON files in Source Control.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "icon": "media/icon-128.png",
   "repository": {
     "type": "git",
@@ -38,7 +38,7 @@
     "vscode:prepublish": "npm run build && npm run compile",
     "compile": "tsc -p ./",
     "build": "node ./build.js",
-    "watch": "node ./build.js --watch", 
+    "watch": "node ./build.js --watch",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
