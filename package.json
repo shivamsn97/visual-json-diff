@@ -10,7 +10,7 @@
   },
   "publisher": "shivamsn97",
   "engines": {
-    "vscode": "^1.99.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Visualization"
@@ -32,6 +32,24 @@
           "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "title": "Visual JSON Diff",
+      "properties": {
+        "visual-json-diff.objectHashKeys": {
+          "type": "array",
+          "default": [
+            "_id",
+            "id",
+            "key",
+            "name"
+          ],
+          "description": "An array of property names to use for identifying objects when diffing. The first matching property found (and not null/undefined) will be used as the object's hash. Order matters.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "scripts": {

@@ -44,9 +44,19 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.window.showErrorMessage("An error occurred while initializing Git integration.");
     }
 
-
     // Register the command
     let disposable = vscode.commands.registerCommand('visual-json-diff.showDiff', async (resourceState: vscode.SourceControlResourceState | vscode.Uri | undefined) => {
+        // --- 0. Get User Configuration ---
+        const configuration = vscode.workspace.getConfiguration('visual-json-diff');
+        let objectHashKeys = configuration.get<string[]>('objectHashKeys');
+
+        // Fallback if the setting is somehow invalid or not an array
+        if (!Array.isArray(objectHashKeys) || objectHashKeys.length === 0) {
+            console.warn("Visual JSON Diff: 'objectHashKeys' setting is invalid or empty. Using default keys: ['_id', 'id', 'key', 'name']");
+            objectHashKeys = ['_id', 'id', 'key', 'name'];
+        }
+
+
         // --- 1. Get the URI of the selected file ---
         let resourceUri: vscode.Uri | undefined;
 
@@ -153,7 +163,7 @@ export async function activate(context: vscode.ExtensionContext) {
                 localResourceRoots: [
                     vscode.Uri.joinPath(context.extensionUri, 'media'),
                     vscode.Uri.joinPath(context.extensionUri, 'dist')
-                ], // Allow access to the media and node_modules directories
+                ],
             }
         );
 
@@ -165,7 +175,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const scriptUri = panel.webview.asWebviewUri(scriptPath);
 
         // --- 4. Set the HTML content for the webview ---
-        panel.webview.html = getWebviewContent(panel, leftContentJson, rightContentJson, styleURI.toString(), scriptUri.toString());
+        panel.webview.html = getWebviewContent(panel, leftContentJson, rightContentJson, styleURI.toString(), scriptUri.toString(), objectHashKeys);
 
         context.subscriptions.push(panel); // Add panel to subscriptions for cleanup
     });
@@ -173,9 +183,7 @@ export async function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-// This function generates the HTML content for the webview
-function getWebviewContent(panel: vscode.WebviewPanel, leftJson: object, rightJson: object, stylePath: string, scriptPath: string) {
-    // Safely stringify JSON data to embed it in the script tag
+function getWebviewContent(panel: vscode.WebviewPanel, leftJson: object, rightJson: object, stylePath: string, scriptPath: string, objectHashKeys: string[]) {
     const leftJsonString = JSON.stringify(leftJson);
     const rightJsonString = JSON.stringify(rightJson);
 
@@ -216,12 +224,13 @@ function getWebviewContent(panel: vscode.WebviewPanel, leftJson: object, rightJs
             <div id="minimap-viewport"></div>
         </div>
     </div>
-	<script nonce="${nonce}">
-		window.leftData = JSON.parse(${JSON.stringify(leftJsonString)});
-		window.rightData = JSON.parse(${JSON.stringify(rightJsonString)});
-		// If needed later: const vscode = acquireVsCodeApi(); window.vscode = vscode;
-	</script>
-	<script type="module" src="${scriptPath}" nonce="${nonce}"></script>
+    <script nonce="${nonce}">
+        window.leftData = JSON.parse(${JSON.stringify(leftJsonString)});
+        window.rightData = JSON.parse(${JSON.stringify(rightJsonString)});
+        window.objectHashKeysConfig = ${JSON.stringify(objectHashKeys)}; // Pass keys to window
+        // If needed later: const vscode = acquireVsCodeApi(); window.vscode = vscode;
+    </script>
+    <script type="module" src="${scriptPath}" nonce="${nonce}"></script>
 </body>
 
 </html>

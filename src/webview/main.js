@@ -10,6 +10,10 @@ const minimapViewport = document.getElementById('minimap-viewport');
 // Initial Data (from <script> tag in HTML)
 const left = window.leftData;
 const right = window.rightData;
+// Retrieve the object hash keys from the window object, with a fallback to the original default
+const configuredObjectHashKeys = window.objectHashKeysConfig && Array.isArray(window.objectHashKeysConfig) && window.objectHashKeysConfig.length > 0
+    ? window.objectHashKeysConfig
+    : ['_id', 'id', 'key', 'name'];
 
 let delta;
 let showingUnchanged = false;
@@ -246,12 +250,16 @@ try {
 
     const objectHash = (obj, index) => {
         if (typeof obj === "object" && obj !== null) {
-            if (obj._id) { return obj._id; }
-            if (obj.id) { return obj.id; }
-            if (obj.key) { return obj.key; }
-            if (obj.name) { return obj.name; }
+            // Iterate over the configured keys
+            for (const key of configuredObjectHashKeys) {
+                // Check if the object has the property and it's not null/undefined
+                // Using obj[key] !== undefined && obj[key] !== null is more robust than just if (obj[key])
+                if (Object.prototype.hasOwnProperty.call(obj, key) && obj[key] !== undefined && obj[key] !== null) {
+                    return obj[key]; // Use the first matching key's value
+                }
+            }
         }
-        return `$$index:${index}`;
+        return `$$index:${index}`; // Fallback if no configured key is found or if not an object
     };
 
     const jsondiffpatchInstance = jsondiffpatch.create({
@@ -290,18 +298,10 @@ try {
                 htmlFormatter.hideUnchanged();
                 toggleButton.textContent = 'Show unchanged values';
             }
-
-            // Run the scripts, which might affect layout
             dom.runScriptTags(visualDiv);
-            console.log("dom.runScriptTags executed after toggle.");
-
-            // Use a nested requestAnimationFrame to ensure DOM/layout is fully stable
-            // before populating the minimap.
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    console.log('[Toggle Before Populate - Nested rAF] mainContent.scrollHeight:', mainContent.scrollHeight, 'mainContent.clientHeight:', mainContent.clientHeight);
                     populateMinimap();
-                    console.log('[Toggle After Populate - Nested rAF] mainContent.scrollHeight:', mainContent.scrollHeight);
                 });
             });
         });
