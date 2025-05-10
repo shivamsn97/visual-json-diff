@@ -556,8 +556,9 @@ ul.jsondiffpatch-textdiff {
 
 /* Minimap Styles */
 #minimap-container {
-    width: 100px; /* We'll change this next for relative width */
-    min-width: 100px;
+    width: 10%;
+    min-width: 30px;
+    max-width: 150px;
     flex-shrink: 0;
     height: 100%;
     background-color: var(--vscode-editor-background, #1e1e1e);
