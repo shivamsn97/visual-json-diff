@@ -200,11 +200,22 @@ function getWebviewContent(panel: vscode.WebviewPanel, leftJson: object, rightJs
 </head>
 
 <body>
-	<header>
-		<h3>Visual JSON Diff</h3>
-		<button id="toggle-unchanged">Show unchanged values</button>
-	</header>
-	<p id="visualdiff">Diff Loading</p>
+    <div class="container">
+        <div class="main-content">
+            <header>
+                <h3>Visual JSON Diff</h3>
+                <button id="toggle-unchanged">Show unchanged values</button>
+            </header>
+            <div id="visualdiff">Diff Loading</div>
+        </div>
+
+        <div id="minimap-container">
+            <div id="minimap-track">
+                {/* Minimap content (blips) will be generated here by JS */}
+            </div>
+            <div id="minimap-viewport"></div>
+        </div>
+    </div>
 	<script nonce="${nonce}">
 		window.leftData = JSON.parse(${JSON.stringify(leftJsonString)});
 		window.rightData = JSON.parse(${JSON.stringify(rightJsonString)});
