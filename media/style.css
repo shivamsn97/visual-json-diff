@@ -262,19 +262,24 @@ a:hover {
     font-family: monospace;
 }
 
-html,
-body {
-    background-color: var(--vscode-editor-background);
-    color: var(--vscode-editor-foreground);
-    font-family: -apple-system, BlinkMacSystemFont, segoe ui, Roboto, Ubuntu,
-        Arial, sans-serif, apple color emoji;
-    min-width: 600px;
-
+html {
+    height: 100%;
     margin: 0;
     padding: 0;
-    display: flex; /* For the overall layout */
+    font-family: -apple-system, BlinkMacSystemFont, segoe ui, Roboto, Ubuntu,
+        Arial, sans-serif, apple color emoji;
+    background-color: var(--vscode-editor-background);
+    color: var(--vscode-editor-foreground);
+}
+
+body {
+    min-width: 600px;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    width: 100vw;
     height: 100vh;
-    overflow: hidden; /* Prevent body scroll, main-content will scroll */
+    overflow: hidden;
 }
 
 button#color-scheme-toggle {
@@ -537,24 +542,28 @@ ul.jsondiffpatch-textdiff {
     display: flex;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
 .main-content {
     flex-grow: 1;
-    /* padding: 20px; */
-    overflow-y: auto; /* Make this area scrollable */
+    overflow-y: auto;
+    overflow-x: auto;
     height: 100%;
     box-sizing: border-box;
+    padding-right: 5px;
 }
 
 /* Minimap Styles */
 #minimap-container {
-    width: 100px; /* Adjust width as needed */
-    height: 100%; /* Full height of the viewport */
-    background-color: var(--vscode-editor-background, #1e1e1e); /* Match editor background */
+    width: 100px; /* We'll change this next for relative width */
+    min-width: 100px;
+    flex-shrink: 0;
+    height: 100%;
+    background-color: var(--vscode-editor-background, #1e1e1e);
     border-left: 1px solid var(--vscode-editorWidget-border, #454545);
-    position: relative; /* For positioning the viewport indicator */
-    overflow: hidden; /* Hide overflow from the track */
+    position: relative;
+    overflow: hidden;
     box-sizing: border-box;
     padding: 5px;
 }
