@@ -80,7 +80,7 @@ function populateMinimap() {
         if (createBlip) {
             const lineRect = line.getBoundingClientRect();
             const lineScrollOffset = lineRect.top - mainContentRect.top + mainContent.scrollTop;
-            
+
             const actualLineHeight = line.offsetHeight;
             let proportionalBlipHeight = (actualLineHeight / mainScrollHeight) * minimapTrackHeight;
             proportionalBlipHeight = Math.max(1, proportionalBlipHeight);
@@ -100,7 +100,7 @@ function populateMinimap() {
 
 function updateMinimapViewport() {
     if (!mainContent || !minimapTrack || !minimapViewport) {
-        if(minimapViewport) minimapViewport.style.height = '0px';
+        if (minimapViewport) { minimapViewport.style.height = '0px'; }
         return;
     }
 
@@ -170,7 +170,7 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('mouseup', () => {
     if (isDraggingMinimap) {
         isDraggingMinimap = false;
-        if (minimapViewport) minimapViewport.style.cursor = 'grab';
+        if (minimapViewport) { minimapViewport.style.cursor = 'grab'; }
         document.body.style.userSelect = '';
     }
 });
@@ -206,10 +206,10 @@ if (minimapTrack) {
 
         const maxScrollPossible = Math.max(0, mainScrollHeight - mainClientHeight);
         targetScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollPossible));
-        
+
         // console.log(`Clamped targetScrollTop: ${targetScrollTop}`);
         mainContent.scrollTop = targetScrollTop;
-        
+
         // For a more immediate visual update of the minimap viewport after click, uncomment the next line.
         // Otherwise, it relies on the debounced scroll event listener.
         // updateMinimapViewport(); 
@@ -225,13 +225,13 @@ try {
     if (!visualDiv) {
         throw new Error("The 'visualdiff' element was not found in the DOM.");
     }
-     if (!mainContent) {
+    if (!mainContent) {
         throw new Error("The '.main-content' element was not found in the DOM.");
     }
 
     const dom = {
         runScriptTags: (el) => {
-            if (!el) return;
+            if (!el) { return; }
             const scripts = el.querySelectorAll("script");
             for (const s of scripts) {
                 try {

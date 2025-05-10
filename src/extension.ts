@@ -151,18 +151,18 @@ export async function activate(context: vscode.ExtensionContext) {
                 enableScripts: true, // Allow scripts to run in the webview
                 // Optionally, restrict domains
                 localResourceRoots: [
-					vscode.Uri.joinPath(context.extensionUri, 'media'),
-					vscode.Uri.joinPath(context.extensionUri, 'dist')
-				], // Allow access to the media and node_modules directories
+                    vscode.Uri.joinPath(context.extensionUri, 'media'),
+                    vscode.Uri.joinPath(context.extensionUri, 'dist')
+                ], // Allow access to the media and node_modules directories
             }
         );
 
-		const stylePath = vscode.Uri.joinPath(context.extensionUri, 'media', 'style.css');
+        const stylePath = vscode.Uri.joinPath(context.extensionUri, 'media', 'style.css');
         const styleURI = panel.webview.asWebviewUri(stylePath);
 
-		// Get URI for the bundled webview script
-		const scriptPath = vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.js');
-		const scriptUri = panel.webview.asWebviewUri(scriptPath);
+        // Get URI for the bundled webview script
+        const scriptPath = vscode.Uri.joinPath(context.extensionUri, 'dist', 'webview.js');
+        const scriptUri = panel.webview.asWebviewUri(scriptPath);
 
         // --- 4. Set the HTML content for the webview ---
         panel.webview.html = getWebviewContent(panel, leftContentJson, rightContentJson, styleURI.toString(), scriptUri.toString());
@@ -179,10 +179,10 @@ function getWebviewContent(panel: vscode.WebviewPanel, leftJson: object, rightJs
     const leftJsonString = JSON.stringify(leftJson);
     const rightJsonString = JSON.stringify(rightJson);
 
-	const nonce = getNonce(); 
+    const nonce = getNonce();
 
     // Use the HTML structure provided, injecting the JSON data and custom styles
-	return `
+    return `
 <!doctype html>
 <html lang="en">
 
