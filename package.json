@@ -31,6 +31,12 @@
           "when": "scmProvider == git",
           "group": "navigation"
         }
+      ],
+      "explorer/context": [
+        {
+          "command": "visual-json-diff.showDiff",
+          "when": "resourceScheme == 'file' && (resourceExtname == '.json' || resourceExtname == '.jsonc') && resourceIsDirectory == false"
+        }
       ]
     },
     "configuration": {
